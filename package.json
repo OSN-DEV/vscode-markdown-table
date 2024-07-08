@@ -24,6 +24,10 @@
     "contributes": {
         "commands": [
             {
+                "command": "markdowntable.editTable",
+                "title": "Markdown Table: Edit by WebView."
+            },
+            {
                 "command": "markdowntable.format",
                 "title": "Markdown Table: Format all tables."
             },

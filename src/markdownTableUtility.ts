@@ -74,10 +74,28 @@ export function splitline(linestr: string, columnNum: number, fillstr: string = 
     return datas;
 };
 
+// 半角１、全角２として文字数をカウントする
+// サロゲートペアも２としてカウントする
+export function getLen(str: string) : number {
+    let len = 0;
 
+    for (let i = 0; i < str.length; i++) {
+        if (str[i].match(/[ -~]/)) {
+            len += 1;
+        } else if (/[\uD800-\uDBFF]/.test(str[i]) && /[\uDC00-\uDFFF]/.test(str[i+1])) {
+            // サロゲートペアの処理
+            len += 2;
+            i++; // サロゲートペアは2文字としてカウントされるため、インデックスを1つ進める
+        } else {
+            len += 2;
+        }
+    }
+
+    return len;
+}
 
 // 半角文字は1文字、全角文字は2文字として文字数をカウントする
-export function getLen(str: string): number {
+export function getLenOriginalFunction(str: string): number {
     let length = 0;
     for (let i = 0; i < str.length; i++) {
         let chp = str.codePointAt(i);

@@ -3,7 +3,7 @@
 import * as vscode from 'vscode';
 import * as commands from './commands';
 import { ContextServiceManager } from "./contextServices/contextServiceManager";
-
+import * as etu from './editTableUtility'
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -28,6 +28,7 @@ export function activate(context: vscode.ExtensionContext) {
     
     // subscribe command handlers
     context.subscriptions.push(
+        vscode.commands.registerCommand('markdowntable.editTable', () => etu.editTable()),
         vscode.commands.registerCommand('markdowntable.nextCell', () => commands.navigateNextCell(true)),
         vscode.commands.registerCommand('markdowntable.prevCell', () => commands.navigatePrevCell(true)),
         vscode.commands.registerCommand('markdowntable.nextCellWithoutFormat', () => commands.navigateNextCell(false)),
