@@ -28,7 +28,7 @@ export function activate(context: vscode.ExtensionContext) {
     
     // subscribe command handlers
     context.subscriptions.push(
-        vscode.commands.registerCommand('markdowntable.editTable', () => etu.editTable()),
+        vscode.commands.registerCommand('markdowntable.editTable', () => etu.editTable(context.extensionUri, context.subscriptions)),
         vscode.commands.registerCommand('markdowntable.nextCell', () => commands.navigateNextCell(true)),
         vscode.commands.registerCommand('markdowntable.prevCell', () => commands.navigatePrevCell(true)),
         vscode.commands.registerCommand('markdowntable.nextCellWithoutFormat', () => commands.navigateNextCell(false)),

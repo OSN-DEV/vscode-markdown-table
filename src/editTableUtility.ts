@@ -1,61 +1,114 @@
 import * as vscode from 'vscode';
+import * as text from './textUtility';
+import * as mtdh from './markdownTableDataHelper';
+import { StringBuilder } from './StringBuilder';
+import * as path from 'path';
+import * as fs from 'fs';
+import { Uri } from 'vscode';
 
 
-export function editTable() {
+// 参考
+// https://code.visualstudio.com/api/extension-guides/webview
+let panel: vscode.WebviewPanel | null = null
 
-    const panel = vscode.window.createWebviewPanel(
-        'editMarkdownTable',
-        'Edit Markdown Table',
-        vscode.ViewColumn.One,
-        {
-          enableScripts: true
-        }
-      );
-      
-      const markdownTable = getSelectedMarkdownTable()
-      panel.webview.html = getWebviewContent(markdownTable);
-      
-    // const editor = vscode.window.activeTextEditor;
-    // if (!editor) {
-    //   return '';
-    // }
-  
-    // const selection = editor.selection;
-    // return editor.document.getText(selection);
+export function editTable(extensionUri: Uri, sbuscriptions:  { dispose(): any }[]) {
+
+  const editor = vscode.window.activeTextEditor as vscode.TextEditor;     // エディタ取得
+  const doc = editor.document;                                            // ドキュメント取得
+  const cur_selection = editor.selection;                                 // 選択範囲取得
+
+  // 表を探す
+  const tableRange = text.findTableRange(doc.getText(), cur_selection.anchor.line, cur_selection.anchor.line);
+  if (!tableRange) {
+    return;
+  }
+  const [startLine, endLine] = tableRange;
+  const table_selection = new vscode.Selection(startLine, 0, endLine, 10000);
+  const table_text = doc.getText(table_selection);
+
+  // 元のカーソル位置を取得
+  const [prevline, prevcharacter] = [cur_selection.active.line - startLine, cur_selection.active.character];
+
+  // テーブルをTableDataにシリアライズ
+  let tableData = mtdh.stringToTableData(table_text);
+  if (tableData.aligns[0][0] === undefined) {
+    return;
+  }
+
+  panel = vscode.window.createWebviewPanel(
+    'editMarkdownTable',
+    'Edit Markdown Table',
+    vscode.ViewColumn.One,
+    {
+      enableScripts: true,
+      localResourceRoots: [Uri.joinPath(extensionUri, 'src', 'assets')]
+    }
+  );
+
+
+  const mainCssUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'src', 'assets', 'styles.css'));
+  const resetCssUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'src', 'assets', 'reset.css'));
+  const scriptUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'src', 'assets', 'script.js'));
+  panel.webview.html = getWebviewContent(tableData.cells)
+    .replace('@resetCss@', resetCssUri.toString())
+    .replace('@mainCss@', mainCssUri.toString())
+    .replace('@scriptUri@', scriptUri.toString())
+    .replaceAll('@nonce@', getNonce())
+    .replaceAll('@csp@', panel.webview.cspSource)
+
+  panel.webview.onDidReceiveMessage((message) => {
+    console.log("onDidReceiveMessage")
+    console.log(message)
+
+    switch(message.command) {
+      case 'complete':
+        panel?.dispose()
+      }
+  },undefined, sbuscriptions)
 }
 
-function getSelectedMarkdownTable(): string {
-    const editor = vscode.window.activeTextEditor;
-    if (!editor) {
-      return '';
-    }
-  
-    const selection = editor.selection;
-    return editor.document.getText(selection);
-  }
 
-function getWebviewContent(table: string): string {
-    // ここでHTMLとJavaScriptを返す。ここでは簡単な例を示します。
-    return `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Edit Markdown Table</title>
-      </head>
-      <body>
-        Hello World!!!!
-        <div id="table-editor"></div>
-        <script>
-          const table = \`${table}\`;
-  
-          // tableをHTMLのテーブルに変換して表示するコードをここに追加
-  
-          // VS Code APIと連携する例
-          const vscode = acquireVsCodeApi();
-        </script>
-      </body>
-      </html>
-    `;
+function getWebviewContent(table: string[][]): string {
+  const html = new StringBuilder()
+  html.append('<!DOCTYPE html>')
+  html.append('<html lang="en">')
+  html.append('<head>')
+  html.append('  <meta charset="UTF-8">')
+  html.append(`  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src @csp@; script-src 'nonce-@nonce@';">`)
+  html.append('  <meta name="viewport" content="width=device-width, initial-scale=1.0">')
+  html.append(`  <link rel="stylesheet" href="@resetCss@">`)
+  html.append(`  <link rel="stylesheet" href="@mainCss@">`)
+  html.append('  <title>Edit Markdown Table</title>')
+  html.append('</head>')
+  html.append('<body>')
+  html.append('<table border cellspacing="0" id="tbl">')
+  table.forEach((row: string[], rowIndex: number) => {
+    html.append('<tr>')
+    row.forEach((value: string, colIndex: number) => {
+      html.append(`<td contenteditable="true">${value}</td>`)
+    })
+    html.append('</tr>')
+  })
+  html.append('</table>')
+  html.append('<button id="btn" nonce="nonce-@nonce@">Complete</button>')
+  html.append('<div id="app" />')
+  html.append('<script nonce="@nonce@" src="@scriptUri@">')
+  html.append('</script>')
+  html.append('</body>')
+  html.append('</html>')
+  return html.toString()
+}
+
+function getNonce() {
+  let text = '';
+  const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  for (let i = 0; i < 32; i++) {
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
   }
+  return text;
+}
+
+export function closePanel() {
+  console.log('close!!!!!!!!!!!!')
+  panel?.dispose()
+}

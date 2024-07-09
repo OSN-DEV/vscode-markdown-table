@@ -1,0 +1,16 @@
+
+body {
+    font-size: 16px;
+	font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;
+	margin: 0;
+	padding: 10px 20px;
+	text-align: center;
+	color: var(--vscode-foreground);
+	background-color: red important!;
+}
+
+table {
+    margin-right: auto;
+    margin-left: auto;
+	
+}
