@@ -62,6 +62,8 @@ export function editTable(extensionUri: Uri, sbuscriptions:  { dispose(): any }[
 
     switch(message.command) {
       case 'complete':
+
+
         panel?.dispose()
       }
   },undefined, sbuscriptions)
