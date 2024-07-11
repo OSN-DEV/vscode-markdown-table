@@ -10,10 +10,11 @@ import { Uri } from 'vscode';
 // 参考
 // https://code.visualstudio.com/api/extension-guides/webview
 let panel: vscode.WebviewPanel | null = null
+let editor : vscode.TextEditor | null = null
 
 export function editTable(extensionUri: Uri, sbuscriptions:  { dispose(): any }[]) {
 
-  const editor = vscode.window.activeTextEditor as vscode.TextEditor;     // エディタ取得
+  editor = vscode.window.activeTextEditor as vscode.TextEditor;     // エディタ取得
   const doc = editor.document;                                            // ドキュメント取得
   const cur_selection = editor.selection;                                 // 選択範囲取得
 
@@ -38,13 +39,12 @@ export function editTable(extensionUri: Uri, sbuscriptions:  { dispose(): any }[
   panel = vscode.window.createWebviewPanel(
     'editMarkdownTable',
     'Edit Markdown Table',
-    vscode.ViewColumn.One,
+    vscode.ViewColumn.Beside,
     {
       enableScripts: true,
       localResourceRoots: [Uri.joinPath(extensionUri, 'src', 'assets')]
     }
   );
-
 
   const mainCssUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'src', 'assets', 'styles.css'));
   const resetCssUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'src', 'assets', 'reset.css'));
@@ -58,17 +58,22 @@ export function editTable(extensionUri: Uri, sbuscriptions:  { dispose(): any }[
 
   panel.webview.onDidReceiveMessage((message) => {
     console.log("onDidReceiveMessage")
-    console.log(message)
 
     switch(message.command) {
       case 'complete':
+        const lines = tableData.originalText.split(/\r\n|\n|\r/);
+        let baseData = `${lines[0]}\r\n${lines[1]}\r\n${message.data.join('\r\n')}`
+        const tmpTable = mtdh.stringToTableData(baseData)
+      //エディタ選択範囲にテキストを反映
+      editor?.edit(edit => {
+        edit.replace(table_selection, mtdh.toFormatTableStr(tmpTable));
+      }); 
+      panel?.dispose()
 
-
-        panel?.dispose()
       }
   },undefined, sbuscriptions)
 }
-
+        
 
 function getWebviewContent(table: string[][]): string {
   const html = new StringBuilder()
@@ -108,9 +113,4 @@ function getNonce() {
     text += possible.charAt(Math.floor(Math.random() * possible.length));
   }
   return text;
-}
-
-export function closePanel() {
-  console.log('close!!!!!!!!!!!!')
-  panel?.dispose()
 }

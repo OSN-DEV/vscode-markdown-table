@@ -8,8 +8,8 @@ import * as Utility from './markdownTableUtility';
 * @param tableText テーブルを表すマークダウンテキスト
 */
 export function stringToTableData(tableText: string): MarkdownTableData {
+    try {
     const lines = tableText.split(/\r\n|\n|\r/);
-
     let getIndent = (linestr: string) => {
         if (linestr.trim().startsWith('|')) {
             let linedatas = linestr.split('|');
@@ -19,12 +19,10 @@ export function stringToTableData(tableText: string): MarkdownTableData {
             return '';
         }
     };
-
     // 1行目
     const columns = Utility.splitline(lines[0], 0);
     const columnNum = columns.length;
     const indent = getIndent(lines[0]);
-
     // 2行目の寄せ記号
     let aligns: [string, string][] = new Array();
     let alignTexts: string[] = new Array();
@@ -54,6 +52,10 @@ export function stringToTableData(tableText: string): MarkdownTableData {
     }
 
     return new MarkdownTableData(tableText, aligns, alignTexts, columns, cells, leftovers, indent);
+} catch(e){
+    console.error("error!!!!!!!!!!", e)
+}
+return new MarkdownTableData(tableText, [], [], [], [], [], "");
 }
 
 function CreateMarkdownTableData(_text: string, _aligns: [string, string][], _columns: string[], _cells: string[][], _leftovers: string[], _indent: string): MarkdownTableData {

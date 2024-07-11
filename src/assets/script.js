@@ -1,5 +1,4 @@
 function complete(){
-    console.log('complete')
     // 返却データの作成
     const data = []
     let rowData = []
@@ -9,8 +8,7 @@ function complete(){
         rowData = []
         const cells = Array.from(row.getElementsByTagName('td'))
         cells.forEach(cell => {
-console.log(cell.innerText)
-            rowData.push(cell.innerText)
+            rowData.push(cell.innerText.replace(/\r\n|\n|\r/, '<br/>'))
         })
         data.push(`|${rowData.join('|')}|`)
     });
@@ -21,7 +19,6 @@ console.log(cell.innerText)
         command: "complete",
         data: data
     },"*")
-    console.log('send!!!!!!!!')
 }
 
 document.addEventListener('DOMContentLoaded', function() {
