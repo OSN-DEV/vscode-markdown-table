@@ -1,5 +1,4 @@
 function complete(){
-    // 返却データの作成
     const data = []
     let rowData = []
     const  table = document.getElementById('tbl')
@@ -11,7 +10,7 @@ function complete(){
             rowData.push(cell.innerText.replace(/\r\n|\n|\r/, '<br/>'))
         })
         data.push(`|${rowData.join('|')}|`)
-    });
+    });``
 
     // 返却データの送信
     const vscode = acquireVsCodeApi();
@@ -21,6 +20,81 @@ function complete(){
     },"*")
 }
 
+function cancel(){
+    const vscode = acquireVsCodeApi();
+    vscode.postMessage({
+        command: "cancel"
+    },"*")
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('btn').addEventListener('click', complete)
+    document.getElementById('complete').addEventListener('click', complete)
+    document.getElementById('cancel').addEventListener('click', cancel)
 })
+
+document.addEventListener('DOMContentLoaded', function() {
+    const tableContainer = document.querySelector('.table-container');
+    const resizer = document.querySelector('.resizer');
+    let startX;
+    let startWidth;
+
+    resizer.addEventListener('mousedown', function(e) {
+        startX = e.pageX;
+        startWidth = parseInt(document.defaultView.getComputedStyle(tableContainer).width, 10);
+        document.documentElement.addEventListener('mousemove', mouseMoveHandler);
+        document.documentElement.addEventListener('mouseup', mouseUpHandler);
+    });
+
+    function mouseMoveHandler(e) {
+        const newWidth = startWidth + (e.pageX - startX);
+        if (newWidth > 0) {  // resizerがテーブルの幅より左側に移動しないようにする
+            tableContainer.style.width = newWidth + 'px';
+
+            // スクロール位置を調整
+            if (e.pageX > window.innerWidth) {
+                window.scrollBy(e.pageX - window.innerWidth, 0);
+            } else if (e.pageX < 0) {
+                window.scrollBy(e.pageX, 0);
+            }
+        }
+    }
+
+    function mouseUpHandler() {
+        document.documentElement.removeEventListener('mousemove', mouseMoveHandler);
+        document.documentElement.removeEventListener('mouseup', mouseUpHandler);
+    }
+
+    // 列リサイザの追加
+    // const cols = document.querySelectorAll('#myTable th');
+    // cols.forEach(function(th) {
+    //     const colResizer = document.createElement('div');
+    //     colResizer.className = 'col-resizer';
+    //     th.appendChild(colResizer);
+
+    //     let startX, startWidth;
+
+    //     colResizer.addEventListener('mousedown', function(e) {
+    //         startX = e.pageX;
+    //         startWidth = parseInt(document.defaultView.getComputedStyle(th).width, 10);
+    //         document.documentElement.addEventListener('mousemove', columnMouseMoveHandler);
+    //         document.documentElement.addEventListener('mouseup', columnMouseUpHandler);
+    //     });
+
+    //     function columnMouseMoveHandler(e) {
+    //         const newWidth = startWidth + (e.pageX - startX);
+    //         if (newWidth > 0) {  // 列幅が0未満にならないようにする
+    //             th.style.width = newWidth + 'px';
+    //             const index = Array.from(th.parentNode.children).indexOf(th);
+    //             document.querySelectorAll(`#myTable td:nth-child(${index + 1})`).forEach(function(td) {
+    //                 td.style.width = newWidth + 'px';
+    //             });
+    //         }
+    //     }
+
+    //     function columnMouseUpHandler() {
+    //         document.documentElement.removeEventListener('mousemove', columnMouseMoveHandler);
+    //         document.documentElement.removeEventListener('mouseup', columnMouseUpHandler);
+    //     }
+    // });
+});
+

@@ -1,7 +1,7 @@
 {
     "name": "markdowntable",
-    "publisher": "TakumiI",
-    "displayName": "Markdown Table",
+    "publisher": "H.T",
+    "displayName": "Markdown Table(改)",
     "description": "Add features to edit markdown table.",
     "version": "0.11.0",
     "icon": "icon.drawio.png",
@@ -19,6 +19,14 @@
         "onLanguage:markdown",
         "onLanguage:mdx",
         "onLanguage:quarto"
+    ],
+    "files": [
+        "out",
+        "src",
+        "assets",
+        "contextServices",
+        "README.md",
+        "LICENSE"
     ],
     "main": "./out/extension.js",
     "contributes": {
@@ -223,7 +231,8 @@
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",
-        "compile": "tsc -p ./",
+        "compile": "tsc -p ./  && npm run copy-assets",
+        "copy-assets": "copyfiles -u 1 src/assets/**/*.{css,js} out",
         "lint": "eslint src --ext ts",
         "watch": "tsc -watch -p ./",
         "pretest": "npm run compile && npm run lint",
@@ -236,6 +245,7 @@
         "@types/vscode": "^1.80.0",
         "@typescript-eslint/eslint-plugin": "^6.7.5",
         "@typescript-eslint/parser": "^6.7.5",
+        "copyfiles": "^2.4.1",
         "eslint": "^8.51.0",
         "glob": "^10.3.10",
         "mocha": "^10.2.0",
