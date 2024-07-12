@@ -230,6 +230,7 @@
         }
     },
     "scripts": {
+        "create:package:memo": "vsce package",
         "vscode:prepublish": "npm run compile",
         "compile": "tsc -p ./  && npm run copy-assets",
         "copy-assets": "copyfiles -u 1 src/assets/**/*.{css,js} out",

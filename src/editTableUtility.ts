@@ -42,13 +42,22 @@ export function editTable(extensionUri: Uri, sbuscriptions:  { dispose(): any }[
     vscode.ViewColumn.Beside,
     {
       enableScripts: true,
-      localResourceRoots: [Uri.joinPath(extensionUri, 'src', 'assets')]
+      localResourceRoots: [Uri.joinPath(extensionUri, 'src', 'assets'), Uri.joinPath(extensionUri, 'out', 'assets')]
     }
   );
 
-  const mainCssUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'src', 'assets', 'styles.css'));
-  const resetCssUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'src', 'assets', 'reset.css'));
-  const scriptUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'src', 'assets', 'script.js'));
+  let resetCssUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'out', 'assets', 'reset.css'));
+  let mainCssUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'out', 'assets', 'styles.css'));
+  let scriptUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'out', 'assets', 'script.js'));
+  if (process.env.VSCODE_DEBUG_MODE === 'true') {
+      resetCssUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'src', 'assets', 'reset.css'));
+      mainCssUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'src', 'assets', 'styles.css'));
+      scriptUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'src', 'assets', 'script.js'));
+    }
+
+  console.log(vscode.Uri.joinPath(extensionUri, 'src', 'assets', 'reset.css'))
+  console.log(vscode.Uri.joinPath(extensionUri, 'src', 'assets', 'reset.css').fsPath)
+
   panel.webview.html = getWebviewContent(tableData.cells)
     .replace('@resetCss@', resetCssUri.toString())
     .replace('@mainCss@', mainCssUri.toString())
@@ -107,6 +116,7 @@ function getWebviewContent(table: string[][]): string {
   // html.append('</body>')
   // html.append('</html>')
 
+  // <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src @csp@; script-src 'nonce-@nonce@';">
 
   html.append(`
   <!DOCTYPE html>
