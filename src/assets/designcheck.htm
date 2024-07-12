@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./reset.css">
+    <link rel="stylesheet" href="./styles.css">
+    <title>Edit Markdown Table</title>
+  </head>
+  <body>
+    <div class="table-container">
+    <table border cellspacing="0" id="tbl">
+    <tbody>
+        <tr><td contenteditable="true">a</td><td contenteditable="true">b</td></tr>
+        <tr><td contenteditable="true">c</td><td contenteditable="true">d</td></tr>
+    </tbody>
+    </table>
+    <div class="resizer"></div>
+    </div>
+  <br/>
+  <button id="complete" nonce="nonce-@nonce@">Complete</button>
+  <button id="cancel" nonce="nonce-@nonce@">Cancel</button>
+  <div id="app" />
+  <script  src="./script.js"></script>
+</body>
+</html>
