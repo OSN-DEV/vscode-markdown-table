@@ -46,8 +46,14 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function mouseMoveHandler(e) {
-        const newWidth = startWidth + (e.pageX - startX);
+        let newWidth = startWidth + (e.pageX - startX);
         if ((newWidth > 0)) {  // resizerがテーブルの幅より左側に移動しないようにする
+            const actWidth = document.getElementById('tbl').offsetWidth
+            console.log(actWidth, newWidth)
+            if (newWidth + 5 < actWidth ) {
+                newWidth = actWidth
+            }
+
             tableContainer.style.width = newWidth + 'px';
 
             // スクロール位置を調整
